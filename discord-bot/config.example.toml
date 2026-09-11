@@ -1,0 +1,30 @@
+[discord]
+# Server ID where the bot should track voice activity.
+guild_id = 123456789012345678
+
+# You can keep the token in DISCORD_TOKEN instead of this file.
+token = ""
+
+# Required intents in the Discord developer portal:
+# - Server Members Intent
+# - Voice States Intent
+
+[bot]
+command_prefix = "!"
+log_level = "INFO"
+update_debounce_seconds = 5
+
+[database]
+path = "data/voice_activity.sqlite3"
+
+[banner]
+# file: only generate/update output_path
+# guild: generate output_path and set it as the Discord server banner
+mode = "file"
+output_path = "data/current_banner.png"
+background_path = ""
+font_path = ""
+period = "week" # day, week, month, all
+width = 960
+height = 540
+

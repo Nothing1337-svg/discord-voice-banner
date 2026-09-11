@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "discord-voice-activity-bot"
+version = "0.1.0"
+description = "Discord bot that tracks voice-channel activity and renders a live statistics banner."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "aiosqlite>=0.20.0",
+  "discord.py>=2.4.0",
+  "Pillow>=10.4.0",
+]
+
+[project.scripts]
+voice-activity-bot = "voice_activity_bot.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
