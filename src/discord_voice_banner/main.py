@@ -5,7 +5,7 @@ import logging
 
 import discord
 
-from .banner import BannerPayload, BannerRenderer
+from .banner import BannerOptions, BannerPayload, BannerRenderer
 from .config import ConfigError, Settings, load_settings
 from .database import VoiceDatabase
 from .logging_setup import configure_logging
@@ -27,7 +27,17 @@ class DiscordVoiceBannerClient(discord.Client):
         self.settings = settings
         self.database = VoiceDatabase(settings.database_path)
         self.tracker = VoiceTracker(database=self.database, guild_id=settings.guild_id, period=settings.banner_period)
-        self.renderer = BannerRenderer(output_path=settings.banner_output_path)
+        self.renderer = BannerRenderer(
+            options=BannerOptions(
+                output_path=settings.banner_output_path,
+                width=settings.banner_width,
+                height=settings.banner_height,
+                language=settings.language,
+                custom_banner_path=settings.custom_banner_path,
+                font_path=settings.font_path,
+                font_bold_path=settings.font_bold_path,
+            )
+        )
         self.scheduler = BannerUpdateScheduler(
             update_callback=self.update_banner,
             interval_seconds=settings.update_interval_seconds,

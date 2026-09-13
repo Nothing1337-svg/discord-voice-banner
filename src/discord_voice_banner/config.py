@@ -9,6 +9,7 @@ from .utils import load_dotenv, parse_bool, parse_float, parse_int, resolve_path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 VALID_PERIODS = {"day", "week", "month", "all"}
+VALID_LANGUAGES = {"ru", "en"}
 
 
 class ConfigError(RuntimeError):
@@ -26,6 +27,12 @@ class Settings:
     banner_update_cooldown_seconds: float
     database_path: Path
     banner_output_path: Path
+    banner_width: int
+    banner_height: int
+    language: str
+    custom_banner_path: Path | None
+    font_path: Path | None
+    font_bold_path: Path | None
     log_level: str
     log_file: Path | None
 
@@ -44,6 +51,10 @@ def load_settings(*, validate_secrets: bool = True, env_file: Path | None = None
     if period not in VALID_PERIODS:
         raise ConfigError(f"BANNER_PERIOD must be one of: {', '.join(sorted(VALID_PERIODS))}.")
 
+    language = os.getenv("LANGUAGE", "ru").strip().lower()
+    if language not in VALID_LANGUAGES:
+        raise ConfigError(f"LANGUAGE must be one of: {', '.join(sorted(VALID_LANGUAGES))}.")
+
     if validate_secrets:
         missing = []
         if not token:
@@ -58,7 +69,10 @@ def load_settings(*, validate_secrets: bool = True, env_file: Path | None = None
             )
 
     database_path = resolve_path(PROJECT_ROOT, os.getenv("DATABASE_PATH", "data/voice_banner.sqlite3"))
-    banner_output_path = resolve_path(PROJECT_ROOT, os.getenv("BANNER_OUTPUT_PATH", "data/current-banner.png"))
+    banner_output_path = resolve_path(PROJECT_ROOT, os.getenv("BANNER_OUTPUT_PATH", "data/banner.png"))
+    custom_banner_path = optional_env_path("CUSTOM_BANNER_PATH")
+    font_path = optional_env_path("FONT_PATH")
+    font_bold_path = optional_env_path("FONT_BOLD_PATH")
     log_file_raw = os.getenv("LOG_FILE", "logs/bot.log").strip()
     log_file = resolve_path(PROJECT_ROOT, log_file_raw) if log_file_raw else None
 
@@ -77,8 +91,19 @@ def load_settings(*, validate_secrets: bool = True, env_file: Path | None = None
             ),
             database_path=database_path,
             banner_output_path=banner_output_path,
+            banner_width=parse_int(os.getenv("BANNER_WIDTH"), default=1280, minimum=640),
+            banner_height=parse_int(os.getenv("BANNER_HEIGHT"), default=640, minimum=320),
+            language=language,
+            custom_banner_path=custom_banner_path,
+            font_path=font_path,
+            font_bold_path=font_bold_path,
             log_level=os.getenv("LOG_LEVEL", "INFO").strip().upper(),
             log_file=log_file,
         )
     except ValueError as exc:
         raise ConfigError(f"Invalid environment configuration: {exc}") from exc
+
+
+def optional_env_path(name: str) -> Path | None:
+    raw = os.getenv(name, "").strip()
+    return resolve_path(PROJECT_ROOT, raw) if raw else None

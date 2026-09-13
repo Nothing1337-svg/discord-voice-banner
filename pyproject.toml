@@ -20,3 +20,6 @@ discord-voice-banner = "discord_voice_banner.main:main"
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+discord_voice_banner = ["locales/*.json"]
+

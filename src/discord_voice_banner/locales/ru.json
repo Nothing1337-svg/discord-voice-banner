@@ -1,0 +1,21 @@
+{
+  "project_title": "discord-voice-banner",
+  "users_in_voice": "Пользователей в голосе",
+  "active_channels": "Активных каналов",
+  "top_user": "Самый активный участник",
+  "time_in_voice": "В голосе",
+  "top_channels": "Топ голосовых каналов",
+  "last_updated": "Последнее обновление",
+  "no_activity": "Активности пока нет",
+  "waiting_for_sessions": "Ждём первые голосовые сессии",
+  "no_channel_stats": "Статистики каналов пока нет",
+  "unknown_user": "Неизвестный пользователь",
+  "unknown_channel": "Неизвестный канал",
+  "period_day": "день",
+  "period_week": "неделя",
+  "period_month": "месяц",
+  "period_all": "всё время",
+  "day_short": "д",
+  "hour_short": "ч",
+  "minute_short": "мин"
+}

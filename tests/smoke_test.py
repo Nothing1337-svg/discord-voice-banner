@@ -5,10 +5,12 @@ from pathlib import Path
 import sys
 import tempfile
 
+from PIL import Image
+
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from discord_voice_banner.banner import BannerPayload, BannerRenderer
+from discord_voice_banner.banner import BannerOptions, BannerPayload, BannerRenderer
 from discord_voice_banner.database import TopChannel, TopUser, VoiceDatabase
 from discord_voice_banner.voice_tracker import VoiceTracker, count_active_voice_channels, count_human_voice_members
 from discord_voice_banner.utils import utc_now
@@ -71,27 +73,70 @@ async def check_database() -> None:
 
 def check_banner() -> None:
     with tempfile.TemporaryDirectory() as tmpdir:
-        output = Path(tmpdir) / "banner.png"
-        renderer = BannerRenderer(output_path=output)
-        renderer.render(
+        tmp = Path(tmpdir)
+        custom_background = tmp / "custom_banner.jpg"
+        Image.new("RGB", (900, 900), (32, 74, 110)).save(custom_background, "JPEG")
+        corrupted_background = tmp / "broken.png"
+        corrupted_background.write_bytes(b"not an image")
+
+        payload = BannerPayload(
+            guild_name="Русский Smoke Test Guild",
+            current_users=5,
+            active_channels=2,
+            period="all",
+            top_user=TopUser(
+                user_id=200,
+                display_name="Очень длинный Discord display name с emoji ✨ и кириллицей",
+                username="unicode_user_с_очень_длинным_ником",
+                avatar_url=None,
+                total_seconds=987654321,
+            ),
+            top_channels=[TopChannel(channel_id=300, name="Voice Канал с очень длинным названием", total_seconds=120)],
+            avatar_bytes=b"broken avatar bytes",
+        )
+
+        scenarios = [
+            BannerOptions(output_path=tmp / "standard_ru.png", width=1280, height=640, language="ru"),
+            BannerOptions(
+                output_path=tmp / "custom_ru.jpg",
+                width=1280,
+                height=640,
+                language="ru",
+                custom_banner_path=custom_background,
+            ),
+            BannerOptions(
+                output_path=tmp / "broken_custom_en.png",
+                width=1280,
+                height=640,
+                language="en",
+                custom_banner_path=corrupted_background,
+            ),
+            BannerOptions(output_path=tmp / "missing_custom.png", width=1280, height=640, language="ru", custom_banner_path=tmp / "missing.png"),
+        ]
+
+        for options in scenarios:
+            renderer = BannerRenderer(options=options)
+            for _ in range(2):
+                output = renderer.render(payload)
+                assert output.exists()
+                assert output.stat().st_size > 0
+                with Image.open(output) as image:
+                    assert image.size == (1280, 640)
+
+        no_avatar_output = tmp / "no_avatar.png"
+        BannerRenderer(options=BannerOptions(output_path=no_avatar_output, width=1280, height=640, language="ru")).render(
             BannerPayload(
-                guild_name="Smoke Test Guild",
-                current_users=5,
-                active_channels=2,
+                guild_name="Пустой сервер",
+                current_users=0,
+                active_channels=0,
                 period="all",
-                top_user=TopUser(
-                    user_id=200,
-                    display_name="Очень длинный Discord display name",
-                    username="unicode_user",
-                    avatar_url=None,
-                    total_seconds=120,
-                ),
-                top_channels=[TopChannel(channel_id=300, name="Voice Канал", total_seconds=120)],
-                avatar_bytes=b"broken avatar bytes",
+                top_user=None,
+                top_channels=[],
+                avatar_bytes=None,
             )
         )
-        assert output.exists()
-        assert output.stat().st_size > 0
+        with Image.open(no_avatar_output) as image:
+            assert image.size == (1280, 640)
 
 
 async def check_voice_tracker() -> None:

@@ -1,0 +1,21 @@
+{
+  "project_title": "discord-voice-banner",
+  "users_in_voice": "Users in voice",
+  "active_channels": "Active channels",
+  "top_user": "Most active member",
+  "time_in_voice": "In voice",
+  "top_channels": "Top voice channels",
+  "last_updated": "Last updated",
+  "no_activity": "No activity yet",
+  "waiting_for_sessions": "Waiting for voice sessions",
+  "no_channel_stats": "No channel statistics yet",
+  "unknown_user": "Unknown user",
+  "unknown_channel": "Unknown channel",
+  "period_day": "day",
+  "period_week": "week",
+  "period_month": "month",
+  "period_all": "all time",
+  "day_short": "d",
+  "hour_short": "h",
+  "minute_short": "m"
+}
