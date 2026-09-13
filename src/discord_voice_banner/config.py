@@ -7,7 +7,7 @@ import os
 from .utils import load_dotenv, parse_bool, parse_float, parse_int, resolve_path
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 VALID_PERIODS = {"day", "week", "month", "all"}
 
 

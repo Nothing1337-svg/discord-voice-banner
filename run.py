@@ -3,14 +3,18 @@ from __future__ import annotations
 import argparse
 import asyncio
 import logging
+from pathlib import Path
 import sys
 
-from bot.banner import BannerPayload, BannerRenderer
-from bot.config import ConfigError, load_settings
-from bot.database import TopChannel, TopUser, VoiceDatabase
-from bot.logging_setup import configure_logging
-from bot.main import main as run_main
-from bot.utils import utc_now
+ROOT = Path(__file__).resolve().parent
+sys.path.insert(0, str(ROOT / "src"))
+
+from discord_voice_banner.banner import BannerPayload, BannerRenderer
+from discord_voice_banner.config import ConfigError, load_settings
+from discord_voice_banner.database import TopChannel, TopUser, VoiceDatabase
+from discord_voice_banner.logging_setup import configure_logging
+from discord_voice_banner.main import main as run_main
+from discord_voice_banner.utils import utc_now
 
 
 logger = logging.getLogger(__name__)
@@ -94,4 +98,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
-

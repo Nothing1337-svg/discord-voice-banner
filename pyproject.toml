@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "discord-voice-banner"
+version = "1.0.0"
+description = "Discord bot that tracks voice activity and renders a dynamic banner."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "aiosqlite>=0.20.0",
+  "discord.py>=2.4.0",
+  "Pillow>=10.4.0",
+]
+
+[project.scripts]
+discord-voice-banner = "discord_voice_banner.main:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+

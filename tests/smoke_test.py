@@ -6,12 +6,12 @@ import sys
 import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+sys.path.insert(0, str(ROOT / "src"))
 
-from bot.banner import BannerPayload, BannerRenderer
-from bot.database import TopChannel, TopUser, VoiceDatabase
-from bot.voice_tracker import VoiceTracker, count_active_voice_channels, count_human_voice_members
-from bot.utils import utc_now
+from discord_voice_banner.banner import BannerPayload, BannerRenderer
+from discord_voice_banner.database import TopChannel, TopUser, VoiceDatabase
+from discord_voice_banner.voice_tracker import VoiceTracker, count_active_voice_channels, count_human_voice_members
+from discord_voice_banner.utils import utc_now
 
 
 class FakeAvatar:
