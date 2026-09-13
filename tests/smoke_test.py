@@ -11,6 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from discord_voice_banner.banner import BannerOptions, BannerPayload, BannerRenderer
+from discord_voice_banner.banner.fonts import FontManager, supports_required_glyphs
 from discord_voice_banner.database import TopChannel, TopUser, VoiceDatabase
 from discord_voice_banner.voice_tracker import VoiceTracker, count_active_voice_channels, count_human_voice_members
 from discord_voice_banner.utils import utc_now
@@ -139,6 +140,14 @@ def check_banner() -> None:
             assert image.size == (1280, 640)
 
 
+def check_cyrillic_font_selection() -> None:
+    manager = FontManager()
+    regular = manager.font(28)
+    bold = manager.font(28, bold=True)
+    assert supports_required_glyphs(regular)
+    assert supports_required_glyphs(bold)
+
+
 async def check_voice_tracker() -> None:
     with tempfile.TemporaryDirectory() as tmpdir:
         database = VoiceDatabase(Path(tmpdir) / "tracker.sqlite3")
@@ -176,6 +185,7 @@ async def check_voice_tracker() -> None:
 async def main() -> None:
     await check_database()
     await check_voice_tracker()
+    check_cyrillic_font_selection()
     check_banner()
     print("smoke ok")
 
