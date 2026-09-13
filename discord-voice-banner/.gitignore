@@ -1,11 +1,16 @@
 .env
 .venv/
+venv/
+env/
 __pycache__/
 *.py[cod]
 .pytest_cache/
 .mypy_cache/
+.ruff_cache/
+.DS_Store
+logs/
 data/*.sqlite3
+data/*.sqlite3-*
 data/*.db
-data/current_banner.png
-logs/*.log
+data/current-banner.png
 
