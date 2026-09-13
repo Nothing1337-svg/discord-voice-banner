@@ -65,6 +65,7 @@ def draw_text_fit(
     max_width: int,
     fill: tuple[int, int, int] | tuple[int, int, int, int],
     bold: bool = False,
+    shadow: bool = True,
 ) -> ImageFont.ImageFont:
     clean = text or ""
     font = font_factory(initial_size, bold=bold)
@@ -74,6 +75,8 @@ def draw_text_fit(
         font = font_factory(size, bold=bold)
 
     fitted = ellipsize(draw, clean, font, max_width)
+    if shadow:
+        draw.text((position[0] + 2, position[1] + 2), fitted, font=font, fill=(0, 0, 0, 155))
     draw.text(position, fitted, font=font, fill=fill)
     return font
 
@@ -86,4 +89,3 @@ def ellipsize(draw: ImageDraw.ImageDraw, text: str, font: ImageFont.ImageFont, m
     while clean and draw.textlength(clean + suffix, font=font) > max_width:
         clean = clean[:-1]
     return clean + suffix if clean else suffix
-

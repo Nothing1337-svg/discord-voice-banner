@@ -11,6 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from discord_voice_banner.banner import BannerOptions, BannerPayload, BannerRenderer
+from discord_voice_banner.banner.layout import build_layout
 from discord_voice_banner.banner.fonts import FontManager, supports_required_glyphs
 from discord_voice_banner.database import TopChannel, TopUser, VoiceDatabase
 from discord_voice_banner.voice_tracker import VoiceTracker, count_active_voice_channels, count_human_voice_members
@@ -148,6 +149,17 @@ def check_cyrillic_font_selection() -> None:
     assert supports_required_glyphs(bold)
 
 
+def check_layout_geometry() -> None:
+    layout = build_layout(1280, 640)
+    layout.validate()
+    assert layout.safe_area.x >= 50
+    assert layout.safe_area.y >= 44
+    assert layout.canvas.bottom - layout.safe_area.bottom >= 40
+    assert layout.top_user_panel.x > layout.stats.right
+    assert layout.channels_panel.y > layout.stats.bottom
+    assert layout.footer.y > layout.channels_panel.bottom
+
+
 async def check_voice_tracker() -> None:
     with tempfile.TemporaryDirectory() as tmpdir:
         database = VoiceDatabase(Path(tmpdir) / "tracker.sqlite3")
@@ -185,6 +197,7 @@ async def check_voice_tracker() -> None:
 async def main() -> None:
     await check_database()
     await check_voice_tracker()
+    check_layout_geometry()
     check_cyrillic_font_selection()
     check_banner()
     print("smoke ok")

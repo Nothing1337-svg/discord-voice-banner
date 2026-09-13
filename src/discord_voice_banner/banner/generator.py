@@ -85,8 +85,7 @@ class BannerRenderer:
         layout = build_layout(self.width, self.height)
 
         self._draw_header(draw, layout.header, payload)
-        self._draw_stat(draw, layout.left_stat, self.localizer.t("users_in_voice"), str(payload.current_users))
-        self._draw_stat(draw, layout.right_stat, self.localizer.t("active_channels"), str(payload.active_channels))
+        self._draw_stats(draw, layout.stats, payload)
         self._draw_top_user(image, draw, layout.top_user_panel, payload)
         self._draw_top_channels(draw, layout.channels_panel, payload)
         self._draw_footer(draw, layout.footer, payload.updated_at or utc_now())
@@ -98,7 +97,7 @@ class BannerRenderer:
     def _background(self) -> Image.Image:
         custom = load_custom_background(self.options.custom_banner_path, width=self.width, height=self.height)
         if custom is not None:
-            overlay = Image.new("RGBA", (self.width, self.height), (5, 8, 15, self.options.overlay_opacity))
+            overlay = Image.new("RGBA", (self.width, self.height), (5, 8, 15, max(120, self.options.overlay_opacity)))
             return Image.alpha_composite(custom.filter(ImageFilter.GaussianBlur(radius=0.2)), overlay)
 
         image = Image.new("RGBA", (self.width, self.height), (9, 13, 23, 255))
@@ -120,43 +119,80 @@ class BannerRenderer:
             (rect.x, rect.y),
             self.localizer.t("project_title"),
             font_factory=self.fonts.font,
-            initial_size=max(42, int(self.height * 0.075)),
-            min_size=28,
+            initial_size=52,
+            min_size=34,
             max_width=rect.width,
             fill=(250, 252, 255),
             bold=True,
         )
         draw_text_fit(
             draw,
-            (rect.x, rect.y + int(rect.height * 0.54)),
+            (rect.x, rect.y + 62),
             payload.guild_name,
             font_factory=self.fonts.font,
-            initial_size=max(24, int(self.height * 0.04)),
+            initial_size=25,
             min_size=18,
             max_width=rect.width,
             fill=(197, 207, 222),
             bold=False,
         )
 
-    def _draw_stat(self, draw: ImageDraw.ImageDraw, rect: Rect, label: str, value: str) -> None:
+    def _draw_stats(self, draw: ImageDraw.ImageDraw, rect: Rect, payload: BannerPayload) -> None:
+        self._soft_panel(draw, rect)
+        padding = 28
+        column_gap = 30
+        column_width = (rect.width - padding * 2 - column_gap) // 2
+        first_x = rect.x + padding
+        second_x = first_x + column_width + column_gap
+        label_y = rect.y + 26
+        value_y = rect.y + 64
+        self._draw_stat_column(
+            draw,
+            first_x,
+            label_y,
+            value_y,
+            column_width,
+            self.localizer.t("users_in_voice"),
+            str(payload.current_users),
+        )
+        self._draw_stat_column(
+            draw,
+            second_x,
+            label_y,
+            value_y,
+            column_width,
+            self.localizer.t("active_channels"),
+            str(payload.active_channels),
+        )
+
+    def _draw_stat_column(
+        self,
+        draw: ImageDraw.ImageDraw,
+        x: int,
+        label_y: int,
+        value_y: int,
+        width: int,
+        label: str,
+        value: str,
+    ) -> None:
         draw_text_fit(
             draw,
-            (rect.x, rect.y),
+            (x, label_y),
             label,
             font_factory=self.fonts.font,
-            initial_size=max(23, int(self.height * 0.04)),
+            initial_size=24,
             min_size=16,
-            max_width=rect.width,
-            fill=(197, 207, 222),
+            max_width=width,
+            fill=(205, 215, 230),
         )
         draw_text_fit(
             draw,
-            (rect.x, rect.y + int(rect.height * 0.25)),
+            (x, value_y),
             value,
             font_factory=self.fonts.font,
-            initial_size=max(74, int(self.height * 0.13)),
-            min_size=44,
-            max_width=rect.width,
+            initial_size=72,
+            min_size=42,
+            max_width=width,
             fill=(255, 255, 255),
             bold=True,
         )
@@ -165,42 +201,43 @@ class BannerRenderer:
         self._panel(draw, rect)
         period_label = self.localizer.period(payload.period)
         title = f"{self.localizer.t('top_user')} · {period_label}"
+        padding = 34
         draw_text_fit(
             draw,
-            (rect.x + 34, rect.y + 28),
+            (rect.x + padding, rect.y + 28),
             title,
             font_factory=self.fonts.font,
-            initial_size=28,
+            initial_size=27,
             min_size=18,
-            max_width=rect.width - 68,
+            max_width=rect.width - padding * 2,
             fill=(197, 207, 222),
             bold=True,
         )
 
-        avatar_size = min(148, max(104, int(rect.height * 0.38)))
-        avatar_x = rect.x + 36
-        avatar_y = rect.y + 100
+        avatar_size = min(120, max(92, rect.height - 188))
+        avatar_x = rect.x + padding
+        avatar_y = rect.y + 126
 
         if payload.top_user is None:
             draw_text_fit(
                 draw,
-                (avatar_x, avatar_y),
+                (avatar_x, avatar_y - 2),
                 self.localizer.t("no_activity"),
                 font_factory=self.fonts.font,
-                initial_size=38,
+                initial_size=34,
                 min_size=22,
-                max_width=rect.width - 72,
+                max_width=rect.width - padding * 2,
                 fill=(255, 255, 255),
                 bold=True,
             )
             draw_text_fit(
                 draw,
-                (avatar_x, avatar_y + 54),
+                (avatar_x, avatar_y + 48),
                 self.localizer.t("waiting_for_sessions"),
                 font_factory=self.fonts.font,
-                initial_size=23,
+                initial_size=22,
                 min_size=16,
-                max_width=rect.width - 72,
+                max_width=rect.width - padding * 2,
                 fill=(160, 174, 194),
             )
             return
@@ -208,17 +245,17 @@ class BannerRenderer:
         avatar = self._avatar(payload.avatar_bytes, avatar_size)
         image.alpha_composite(avatar, (avatar_x, avatar_y))
 
-        text_x = avatar_x + avatar_size + 34
-        text_width = rect.right - text_x - 36
+        text_x = avatar_x + avatar_size + 30
+        text_width = rect.right - text_x - padding
         display_name = payload.top_user.display_name or self.localizer.t("unknown_user")
         username = payload.top_user.username or self.localizer.t("unknown_user")
 
         draw_text_fit(
             draw,
-            (text_x, avatar_y + 10),
+            (text_x, avatar_y + 4),
             display_name,
             font_factory=self.fonts.font,
-            initial_size=40,
+            initial_size=34,
             min_size=22,
             max_width=text_width,
             fill=(255, 255, 255),
@@ -226,20 +263,20 @@ class BannerRenderer:
         )
         draw_text_fit(
             draw,
-            (text_x, avatar_y + 62),
+            (text_x, avatar_y + 50),
             username,
             font_factory=self.fonts.font,
-            initial_size=23,
+            initial_size=21,
             min_size=16,
             max_width=text_width,
             fill=(160, 174, 194),
         )
         draw_text_fit(
             draw,
-            (text_x, avatar_y + 105),
+            (text_x, avatar_y + 90),
             f"{self.localizer.t('time_in_voice')}: {self.localizer.duration(payload.top_user.total_seconds)}",
             font_factory=self.fonts.font,
-            initial_size=30,
+            initial_size=27,
             min_size=18,
             max_width=text_width,
             fill=(91, 226, 205),
@@ -248,57 +285,60 @@ class BannerRenderer:
 
     def _draw_top_channels(self, draw: ImageDraw.ImageDraw, rect: Rect, payload: BannerPayload) -> None:
         self._panel(draw, rect)
-        x = rect.x + 30
-        y = rect.y + 24
+        padding = 30
+        x = rect.x + padding
+        y = rect.y + 22
         draw_text_fit(
             draw,
             (x, y),
             self.localizer.t("top_channels"),
             font_factory=self.fonts.font,
-            initial_size=29,
+            initial_size=26,
             min_size=20,
-            max_width=rect.width - 60,
+            max_width=rect.width - padding * 2,
             fill=(197, 207, 222),
             bold=True,
         )
 
-        y += 54
-        row_gap = max(35, int(rect.height * 0.17))
+        y += 48
+        row_gap = 28
         if not payload.top_channels:
             draw_text_fit(
                 draw,
                 (x, y),
                 self.localizer.t("no_channel_stats"),
                 font_factory=self.fonts.font,
-                initial_size=23,
+                initial_size=21,
                 min_size=16,
-                max_width=rect.width - 60,
+                max_width=rect.width - padding * 2,
                 fill=(160, 174, 194),
             )
             return
 
         rank_width = 42
-        time_width = 138
-        name_width = rect.width - 60 - rank_width - time_width
+        time_width = 132
+        name_width = rect.width - padding * 2 - rank_width - time_width
         for index, channel in enumerate(payload.top_channels[:3], start=1):
-            if y + 30 > rect.bottom - 16:
+            if y + 24 > rect.bottom - 12:
                 break
             channel_name = channel.name or self.localizer.t("unknown_channel")
-            rank_font = self.fonts.font(22, bold=True)
-            row_font = self.fonts.font(23, bold=True)
-            time_font = self.fonts.font(22)
+            rank_font = self.fonts.font(19, bold=True)
+            row_font = self.fonts.font(20, bold=True)
+            time_font = self.fonts.font(19)
             draw.text((x, y), f"{index}.", fill=(91, 226, 205), font=rank_font)
             draw.text((x + rank_width, y), ellipsize(draw, channel_name, row_font, name_width), fill=(255, 255, 255), font=row_font)
-            draw.text((rect.right - 30 - time_width, y), self.localizer.duration(channel.total_seconds), fill=(197, 207, 222), font=time_font)
+            draw.text((rect.right - padding - time_width, y), self.localizer.duration(channel.total_seconds), fill=(197, 207, 222), font=time_font)
             y += row_gap
 
     def _draw_footer(self, draw: ImageDraw.ImageDraw, rect: Rect, updated_at: int) -> None:
         timestamp = datetime.fromtimestamp(updated_at, tz=timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
         text = f"{self.localizer.t('last_updated')}: {timestamp}"
-        footer_font = self.fonts.font(22)
+        footer_font = self.fonts.font(19)
         fitted = ellipsize(draw, text, footer_font, rect.width)
         text_width = draw.textlength(fitted, font=footer_font)
-        draw.text((rect.right - int(text_width), rect.y), fitted, fill=(160, 174, 194), font=footer_font)
+        position = (rect.right - int(text_width), rect.y)
+        draw.text((position[0] + 2, position[1] + 2), fitted, fill=(0, 0, 0, 155), font=footer_font)
+        draw.text(position, fitted, fill=(178, 190, 207), font=footer_font)
 
     def _avatar(self, avatar_bytes: bytes | None, size: int) -> Image.Image:
         try:
@@ -338,10 +378,18 @@ class BannerRenderer:
     def _panel(draw: ImageDraw.ImageDraw, rect: Rect) -> None:
         draw.rounded_rectangle(
             (rect.x, rect.y, rect.right, rect.bottom),
-            radius=28,
-            fill=(11, 17, 29, 215),
+            radius=26,
+            fill=(8, 13, 24, 232),
             outline=(95, 116, 148, 120),
             width=1,
+        )
+
+    @staticmethod
+    def _soft_panel(draw: ImageDraw.ImageDraw, rect: Rect) -> None:
+        draw.rounded_rectangle(
+            (rect.x, rect.y, rect.right, rect.bottom),
+            radius=22,
+            fill=(6, 10, 18, 118),
         )
 
     def _save(self, image: Image.Image) -> None:
