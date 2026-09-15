@@ -13,6 +13,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from discord_voice_banner.banner import BannerOptions, BannerPayload, BannerRenderer
 from discord_voice_banner.banner.layout import build_layout
 from discord_voice_banner.banner.fonts import FontManager, supports_required_glyphs
+from discord_voice_banner.banner.localization import Localizer
 from discord_voice_banner.database import TopChannel, TopUser, VoiceDatabase
 from discord_voice_banner.voice_tracker import VoiceTracker, count_active_voice_channels, count_human_voice_members
 from discord_voice_banner.utils import utc_now
@@ -160,6 +161,12 @@ def check_layout_geometry() -> None:
     assert layout.footer.y > layout.channels_panel.bottom
 
 
+def check_project_title() -> None:
+    locales_dir = ROOT / "src" / "discord_voice_banner" / "locales"
+    assert Localizer("ru", locales_dir).t("project_title") == "eternally"
+    assert Localizer("en", locales_dir).t("project_title") == "eternally"
+
+
 async def check_voice_tracker() -> None:
     with tempfile.TemporaryDirectory() as tmpdir:
         database = VoiceDatabase(Path(tmpdir) / "tracker.sqlite3")
@@ -198,6 +205,7 @@ async def main() -> None:
     await check_database()
     await check_voice_tracker()
     check_layout_geometry()
+    check_project_title()
     check_cyrillic_font_selection()
     check_banner()
     print("smoke ok")

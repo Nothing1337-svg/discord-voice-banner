@@ -29,7 +29,7 @@ class BannerOptions:
     custom_banner_path: Path | None = None
     font_path: Path | None = None
     font_bold_path: Path | None = None
-    overlay_opacity: int = 142
+    overlay_opacity: int = 108
 
 
 @dataclass(frozen=True)
@@ -81,7 +81,7 @@ class BannerRenderer:
     def render(self, payload: BannerPayload) -> Path:
         ensure_parent_dir(self.output_path)
         image = self._background()
-        draw = ImageDraw.Draw(image)
+        draw = ImageDraw.Draw(image, "RGBA")
         layout = build_layout(self.width, self.height)
 
         self._draw_header(draw, layout.header, payload)
@@ -97,7 +97,7 @@ class BannerRenderer:
     def _background(self) -> Image.Image:
         custom = load_custom_background(self.options.custom_banner_path, width=self.width, height=self.height)
         if custom is not None:
-            overlay = Image.new("RGBA", (self.width, self.height), (5, 8, 15, max(120, self.options.overlay_opacity)))
+            overlay = Image.new("RGBA", (self.width, self.height), (5, 8, 15, max(96, self.options.overlay_opacity)))
             return Image.alpha_composite(custom.filter(ImageFilter.GaussianBlur(radius=0.2)), overlay)
 
         image = Image.new("RGBA", (self.width, self.height), (9, 13, 23, 255))
@@ -379,8 +379,8 @@ class BannerRenderer:
         draw.rounded_rectangle(
             (rect.x, rect.y, rect.right, rect.bottom),
             radius=26,
-            fill=(8, 13, 24, 232),
-            outline=(95, 116, 148, 120),
+            fill=(8, 13, 24, 38),
+            outline=(220, 232, 255, 118),
             width=1,
         )
 
@@ -389,7 +389,9 @@ class BannerRenderer:
         draw.rounded_rectangle(
             (rect.x, rect.y, rect.right, rect.bottom),
             radius=22,
-            fill=(6, 10, 18, 118),
+            fill=(6, 10, 18, 32),
+            outline=(220, 232, 255, 92),
+            width=1,
         )
 
     def _save(self, image: Image.Image) -> None:
